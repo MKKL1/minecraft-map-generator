@@ -1,12 +1,14 @@
 package com.mkkl;
 
 import com.mkkl.minecraft.TerrainModel;
-import com.mkkl.schematic.SchemWriter;
-import com.mkkl.schematic.SchematicData;
-import com.mkkl.tmreaders.asciigrid.ASCIIGridParser;
+import com.mkkl.io.schematic.SchemWriter;
+import com.mkkl.io.parsing.asciigrid.ASCIIGridParser;
+import com.mkkl.minecraft.generation.GenerateWorldData;
+import com.mkkl.minecraft.generation.TerrainInfill;
 import com.mkkl.types.*;
 
 import java.io.IOException;
+import java.util.concurrent.ExecutionException;
 
 public class Main {
 
@@ -15,18 +17,23 @@ public class Main {
         try {
 
             long startTime = System.nanoTime();
-            TerrainHeightMap terrainHeightMap = ASCIIGridParser.parse("D:\\pobieranie\\result(7).asc").toTerrainHeightMap();
+            TerrainHeightMap terrainHeightMap = ASCIIGridParser.parse("result.asc").toTerrainHeightMap();
+
+            TerrainModel terrainModel = new GenerateWorldData(
+                    //Making it smaller because pasting large schematic with worldedit takes too much time
+                    //Would be nice to have mcedit back
+                    terrainHeightMap.scaleToResolution(new Vector2<Float>(2f, 2f)))
+                    .setInfillType(TerrainInfill.FULL)
+                    .generate().getTerrainModel();
+
+            SchemWriter schemWriter = new SchemWriter("test.schem");
+            schemWriter.write(terrainModel);
+            schemWriter.save(true);
+
             long stopTime = System.nanoTime();
             System.out.println((double)(stopTime - startTime)/1000000000);
 
-
-            TerrainModel terrainModel = HeightMapUtils.heightMapToMcModel(HeightMapUtils.scaleToResolution(terrainHeightMap, new Vector2<Float>(1f, 1f)));
-            SchematicData schematicData = new SchematicData(terrainModel);
-
-            SchemWriter schemWriter = new SchemWriter("C:\\Users\\mkkl\\Desktop\\test2.schem");
-            schemWriter.write(schematicData);
-            schemWriter.save(false);
-        } catch (IOException e) {
+        } catch (IOException | ExecutionException | InterruptedException e) {
             e.printStackTrace();
         }
 

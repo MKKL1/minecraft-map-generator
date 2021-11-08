@@ -3,6 +3,7 @@ package com.mkkl;
 public class ScalingAlgorithms {
 
     public static float[][] bilinearInterpolation(float[][] map, float scalingfactorX, float scalingfactorY) {
+        //long startTime = System.nanoTime();
         int mapsizeX = map.length;
         int mapsizeY = map[0].length;
 
@@ -22,10 +23,14 @@ public class ScalingAlgorithms {
                 newmap[x][y] = v;
             }
         }
+        //long stopTime = System.nanoTime();
+        //System.out.println();
+        //System.out.printf("Bilinear scaling took %f seconds%n", (float)(stopTime - startTime)/1000000000);
         return newmap;
     }
 
     public static float[][] nearestNeighbor(float[][] map, float scalingfactorX, float scalingfactorY) {
+        //long startTime = System.nanoTime();
         int mapsizeX = map.length;
         int mapsizeY = map[0].length;
 
@@ -39,6 +44,9 @@ public class ScalingAlgorithms {
                 newmap[x][y] = map[Math.round(((float)x / newsizeX) * (mapsizeX-1))][Math.round(((float)y / newsizeY) * (mapsizeY-1))];
             }
         }
+        //long stopTime = System.nanoTime();
+        //System.out.println();
+        //System.out.printf("Nearest neighbor scaling took %f seconds%n", (float)(stopTime - startTime)/1000000000);
         return newmap;
     }
 

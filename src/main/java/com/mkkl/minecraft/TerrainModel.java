@@ -2,89 +2,93 @@ package com.mkkl.minecraft;
 
 import com.mkkl.types.Vector3;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Vector;
-
 
 public class TerrainModel {
-    private short[][][] terraindata;
-    private final List<String> palette = new ArrayList<>();
+    private Chunk[][] terraindata;
     private Vector3<Integer> size;
-    private short listiterator = -1;
 
     /**
      * Used to store terrain data in minecraft block form
      * Using cartesian coordinate system (Z is height)
      *
-     * @param   Xsize maximum size of terrain in x axis
-     * @param   Ysize ... y axis (z in minecraft)
-     * @param   Zsize ... z axis (y in minecraft)
+     * //@param   Xsize maximum size of terrain in x axis
+     * //@param   Ysize ... y axis (z in minecraft)
+     * //@param   Zsize ... z axis (y in minecraft)
      */
-    public TerrainModel(int Xsize, int Ysize, int Zsize) {
-        terraindata = new short[Xsize][Ysize][Zsize];
-        addBlockToPalette("minecraft:air");
-        size = new Vector3<>(Xsize, Ysize, Zsize);
+    public TerrainModel(Chunk[][] blocks, Vector3<Integer> size) {
+        terraindata = blocks;
+        setSize(size);
     }
-
-    public TerrainModel(Vector3<Integer> size) {
-        this(size.x, size.y, size.z);
-    }
-
     /**
-     * @return id of added block or already existing with same name
-     */
-    public short addBlockToPalette(String name) {
-        if (!palette.contains(name)) {
-            palette.add(name);
-            listiterator++;
-            return listiterator;
-        } else return getBlockPaletteId(name);
-
-    }
-
-    /**
-     * For better performence use {@link #setBlock(int, int, int, short)}
+     * For better performence use {@link #setBlock(int, int, int, int)}
      */
     public void setBlock(int x, int y, int z, String name) {
-        int index = palette.indexOf(name);
-        if (index == -1) {
-            addBlockToPalette(name);
-            terraindata[x][y][z] = (short)palette.indexOf(name);
-        } else {
-            terraindata[x][y][z] = (short)index;
-        }
+        terraindata[x/16][y/16].setBlock(x%16, y%16,z, name);
     }
 
-    /**
-     * @return id of block stored in palette
-     */
-    public short getBlockPaletteId(String name) {
-        return (short)palette.indexOf(name);
-    }
+
 
     /**
      * Uses id of already added block to palette
-     * @see #addBlockToPalette(String)
+     * @see BlockPalette#addBlockToPalette(String) 
      */
-    public void setBlock(int x, int y, int z, short id) {
-        terraindata[x][y][z] = id;
+    public void setBlock(int x, int y, int z, int id) {
+        terraindata[x/16][y/16].setBlock(x%16, y%16,z, id);
     }
 
+    public void fillBlocks(int x1, int y1, int z1, int x2, int y2, int z2, int id) {
+        int xlength = x1-x2;
+        int ylength = y1-y2;
+        int zlength = z1-z2;
+        int xd = Integer.compare(0, xlength);
+        int yd = Integer.compare(0, ylength);
+        int zd = Integer.compare(0, zlength);
 
-    public short[][][] getTerraindata() {
-        return terraindata;
-    }
-
-    public void setTerraindata(short[][][] terraindata) {
-        this.terraindata = terraindata;
-    }
-
-    public List<String> getPalette() {
-        return palette;
+        for(int i = 0; i < xlength; i++) {
+            for(int j = 0; j < ylength; j++) {
+                for(int k = 0; k < zlength; k++) {
+                    setBlock(x1+xd, y1+yd, z1+zd, id);
+                }
+            }
+        }
     }
 
     public Vector3<Integer> getSize() {
         return size;
+    }
+
+    public void setSize(Vector3<Integer> size) {
+        this.size = size;
+    }
+
+    /**
+     * Finds all blocks in chunks and stores them in one {@link BlockPalette}
+     * @see this#applyNewBlockPaletteToAll(BlockPalette)
+     */
+    public BlockPalette getCombinedBlockPalette() {
+        BlockPalette blockPalette = new BlockPalette();
+        for(Chunk[] a: terraindata)
+            for(Chunk b: a) {
+                blockPalette.getBlocklist().addAll(b.getBlockPalette().difference(blockPalette));
+            }
+        return blockPalette;
+    }
+
+    /**
+     * Applies block palette to all stored chunks
+     * @see Chunk#applyNewBlockPalette(BlockPalette)
+     */
+    public void applyNewBlockPaletteToAll(BlockPalette newBlockPalette) {
+        for(Chunk[] a: terraindata)
+            for(Chunk b: a) {
+                b.applyNewBlockPalette(newBlockPalette);
+            }
+    }
+
+    /**
+     * @return Array of chunks
+     */
+    public Chunk[][] getTerraindata() {
+        return terraindata;
     }
 }
