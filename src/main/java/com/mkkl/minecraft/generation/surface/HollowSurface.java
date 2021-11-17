@@ -9,9 +9,13 @@ public class HollowSurface implements SurfaceGenerator{
     public void generateColumn(GenerationSettings generationSettings, GeneratorData generatorData, TerrainHeightMap terrainHeightMap) {
         int z = Math.round(terrainHeightMap.getPoint(generatorData.xInWorld,generatorData.yInWorld) - terrainHeightMap.minheight);
         generatorData.chunk.setMaxHeight(z);
-        if (z < 0) generatorData.chunk.setBlock(generatorData.xInChunk,generatorData.yInChunk,0, generationSettings.errorid);
+        if (z < 0) {
+            generatorData.chunk.setBlock(generatorData.xInChunk,generatorData.yInChunk,0, generationSettings.errorid);
+            generatorData.chunk.setHeight(generatorData.xInChunk, generatorData.yInChunk, (short)0);
+        }
         else {
             generatorData.chunk.setBlock(generatorData.xInChunk,generatorData.yInChunk,z, generationSettings.baseid);
+            generatorData.chunk.setHeight(generatorData.xInChunk, generatorData.yInChunk, (short)z);
         }
     }
 }

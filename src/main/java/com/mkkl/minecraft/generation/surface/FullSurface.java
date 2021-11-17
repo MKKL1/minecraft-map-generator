@@ -11,11 +11,13 @@ public class FullSurface implements SurfaceGenerator{
         generatorData.chunk.setMaxHeight(z);
         if (z < 0) generatorData.chunk.setBlock(generatorData.xInChunk,generatorData.yInChunk,0, generationSettings.errorid);
         else {
-            if (z == 0)
-                generatorData.chunk.setBlock(generatorData.xInChunk,generatorData.yInChunk,0, generationSettings.topid);
-            else {
+            if (z == 0) {
+                generatorData.chunk.setBlock(generatorData.xInChunk, generatorData.yInChunk, 0, generationSettings.topid);
+                generatorData.chunk.setHeight(generatorData.xInChunk, generatorData.yInChunk, (short)0);
+            } else {
                 generatorData.chunk.fillColumn(generatorData.xInChunk,generatorData.yInChunk, z-1, 0, generationSettings.baseid);
                 generatorData.chunk.setBlock(generatorData.xInChunk,generatorData.yInChunk,z, generationSettings.topid);
+                generatorData.chunk.setHeight(generatorData.xInChunk, generatorData.yInChunk, (short)z);
             }
         }
     }

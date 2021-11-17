@@ -14,8 +14,23 @@ public class TaskManager {
     public <T> Future<T> add(Callable<T> task) {
         return pool.submit(task);
     }
+    public void add(Runnable task) {
+        pool.submit(task);
+    }
 
     public void close() {
         pool.shutdownNow();
+    }
+
+    public void awaitTerminationAfterShutdown() {
+        pool.shutdown();
+        try {
+            if (!pool.awaitTermination(5, TimeUnit.MINUTES)) {
+                pool.shutdownNow();
+            }
+        } catch (InterruptedException ex) {
+            pool.shutdownNow();
+            Thread.currentThread().interrupt();
+        }
     }
 }

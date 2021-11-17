@@ -2,6 +2,9 @@ package com.mkkl.minecraft;
 
 import com.mkkl.types.Vector3;
 
+import java.util.Collection;
+import java.util.List;
+
 
 public class TerrainModel {
     private Chunk[][] terraindata;
@@ -19,6 +22,24 @@ public class TerrainModel {
         terraindata = blocks;
         setSize(size);
     }
+
+    public TerrainModel(TerrainManager terrainManager, Vector3<Integer> size) {
+        terraindata = new Chunk[terrainManager.chunkSize.x][terrainManager.chunkSize.y];
+        for (Region region: terrainManager.getRegionList().values()) {
+            Chunk[][] chunks = region.getChunkArray();
+            int x = region.xPos;
+            int y = region.yPos;
+            for(int j = 0; j < chunks.length; j++) {
+                for(int k = 0; k < chunks[j].length; k++) {
+                    Chunk chunk = chunks[j][k];
+                    if (chunk != null)
+                        terraindata[(x*32)+j][(y*32)+k] = chunk;
+                }
+            }
+        }
+        setSize(size);
+    }
+
     /**
      * For better performence use {@link #setBlock(int, int, int, int)}
      */
@@ -69,6 +90,7 @@ public class TerrainModel {
         BlockPalette blockPalette = new BlockPalette();
         for(Chunk[] a: terraindata)
             for(Chunk b: a) {
+                if (b != null)
                 blockPalette.getBlocklist().addAll(b.getBlockPalette().difference(blockPalette));
             }
         return blockPalette;
@@ -81,6 +103,7 @@ public class TerrainModel {
     public void applyNewBlockPaletteToAll(BlockPalette newBlockPalette) {
         for(Chunk[] a: terraindata)
             for(Chunk b: a) {
+                if (b != null)
                 b.applyNewBlockPalette(newBlockPalette);
             }
     }

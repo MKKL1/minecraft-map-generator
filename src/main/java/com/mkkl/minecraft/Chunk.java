@@ -8,22 +8,58 @@ import com.mkkl.constants;
 
 public class Chunk {
 
-    private final int[][][] blocks = new int[constants.CHUNK_HORIZONTAL_SIZE][constants.CHUNK_HORIZONTAL_SIZE][constants.CHUNK_VERTICAL_SIZE];
+    private byte[][][] blocks;
+    private final short[][] heightmap = new short[constants.CHUNK_HORIZONTAL_SIZE][constants.CHUNK_HORIZONTAL_SIZE];
 
     private int xPos;
 
     private int yPos;
 
     private int maxHeight = 0;
+    private int blocksZ;
+
+    public boolean generated;
+    public boolean decorated;
+
+    public int sectionCount = 0;
+
+    private int airid;
 
     private BlockPalette blockPalette;
+
+    public Chunk(int _maxHeight) {
+        initBlocks(_maxHeight);
+    }
+
     public Chunk() {
+        this(constants.CHUNK_VERTICAL_SIZE);
         blockPalette = new BlockPalette();
-        blockPalette.addBlockToPalette("minecraft:air");
+        airid = blockPalette.addBlockToPalette("minecraft:air");
     }
 
     public Chunk(BlockPalette blockPalette) {
+        this(constants.CHUNK_VERTICAL_SIZE);
         setBlockPalette(blockPalette);
+    }
+
+    public Chunk(BlockPalette blockPalette, int _maxHeight) {
+        this(_maxHeight);
+        setBlockPalette(blockPalette);
+    }
+
+    /**
+     * May be used to make chunk array size smaller to take up less space in memory
+     * @param _maxHeight expected max height in chunk
+     * */
+    public void initBlocks(int _maxHeight) {
+        blocksZ = _maxHeight;
+        if (blocksZ > constants.CHUNK_VERTICAL_SIZE) blocksZ = constants.CHUNK_VERTICAL_SIZE;
+        blocks = new byte[constants.CHUNK_HORIZONTAL_SIZE][constants.CHUNK_HORIZONTAL_SIZE][blocksZ];
+    }
+
+    public short getBlock(int chunk_x, int chunk_y, int chunk_z) {
+        if (chunk_z >= blocksZ) return (short) airid;
+        else return blocks[chunk_x][chunk_y][chunk_z];
     }
     /**
      * @param chunk_z height (y in minecraft)
@@ -31,7 +67,7 @@ public class Chunk {
      *
      * */
     public void setBlock(int chunk_x, int chunk_y, int chunk_z, String name) {
-        blocks[chunk_x][chunk_y][chunk_z] = blockPalette.addBlockToPalette(name);
+        blocks[chunk_x][chunk_y][chunk_z] = (byte) blockPalette.addBlockToPalette(name);
     }
 
     /**
@@ -40,7 +76,7 @@ public class Chunk {
      * @see BlockPalette#addBlockToPalette(String)
      * */
     public void setBlock(int chunk_x, int chunk_y, int chunk_z, int id) {
-        blocks[chunk_x][chunk_y][chunk_z] = id;
+        blocks[chunk_x][chunk_y][chunk_z] = (byte) id;
     }
     /**
      * Fills all blocks in region defined by 2 points
@@ -122,10 +158,10 @@ public class Chunk {
      * @param newid id of block that will replace old one
      * */
     public void replaceAll(int oldid, int newid) {
-        for(int[][] a: blocks)
-            for(int[] b: a)
-                for(int c: b) {
-                    if (c==oldid) c=newid;
+        for(byte[][] a: blocks)
+            for(byte[] b: a)
+                for(byte c: b) {
+                    if (c==oldid) c=(byte)newid;
                 }
     }
 
@@ -211,7 +247,27 @@ public class Chunk {
      * @see BlockPalette#getBlockPaletteName(int)
      * @return Array of id of blocks
      */
-    public int[][][] getBlocks() {
+    public byte[][][] getBlocks() {
         return blocks;
+    }
+
+    public boolean hasBlocks() {
+        return blocks != null;
+    }
+
+    //public short[][] getHeightmap() {
+    //   return heightmap;
+    //}
+
+    public short getHeight(int x, int y) {
+        return heightmap[x][y];
+    }
+    public void setHeight(int x, int y, short height) {
+        heightmap[x][y] = height;
+    }
+
+    public void clear() {
+        blocks = null;
+        blockPalette = null;
     }
 }

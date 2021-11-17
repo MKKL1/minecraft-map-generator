@@ -41,7 +41,7 @@ public class SchemWriter {
         ByteArrayTag byteArrayTag = new ByteArrayTag();
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 
-        int[][][] heightmap = schematicData.getBlocks();
+        short[][][] heightmap = schematicData.getBlocks();
         for(int z = 0; z < schematicData.height; z++) {
             for(int y = 0; y < schematicData.length; y++) {
                 for(int x = 0; x < schematicData.width; x++) {
